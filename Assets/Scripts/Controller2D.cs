@@ -68,12 +68,23 @@ public class Controller2D : MonoBehaviour
 				float slopeAngle  = Vector2.Angle(hit.normal, Vector2.up); 
 
 				if (i == 0 && slopeAngle <= maxClimbAngle) {
+					float distanceToSlopeStart = 0;
+					// if starting to climb a new slope
+					if (slopeAngle != collisions.slopeAnglePrev) {     
+						distanceToSlopeStart = hit.distance - skinWidth;
+						velocity.x -= distanceToSlopeStart * directionX;
+					}
 					ClimbSlope(ref velocity, slopeAngle);
+					velocity.x += distanceToSlopeStart * directionX;
 				}
 
 				if (!collisions.climbingSlope || slopeAngle > maxClimbAngle) {
 					velocity.x = (hit.distance - skinWidth) * directionX;
 					rayLength = hit.distance;
+
+					if (collisions.climbingSlope) {
+						velocity.y = Mathf.Tan(collisions.slopeAngle * Mathf.Deg2Rad) * Mathf.Abs(velocity.x);
+					}
 
 					collisions.left  = (directionX == -1);
 					collisions.right = (directionX == 1);
@@ -100,6 +111,10 @@ public class Controller2D : MonoBehaviour
 			if (hit) {
 				velocity.y = (hit.distance - skinWidth) * directionY;
 				rayLength = hit.distance;
+
+				if (collisions.climbingSlope) {
+					velocity.x = velocity.y / Mathf.Tan(collisions.slopeAngle * Mathf.Deg2Rad) * Mathf.Sign(velocity.x);
+				}
 
 				collisions.below = (directionY== -1);
 				collisions.above = (directionY == 1); 
